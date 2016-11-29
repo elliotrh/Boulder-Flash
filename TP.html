@@ -1,0 +1,204 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<!-<body bgcolor="#ABEBC6"->
+  <head>
+  
+  	<!-- jquery api -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+    <!-- google maps api -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&callback=initMap">
+    </script>
+	
+	<!-- google places api -->
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&libraries=places"></script>
+	
+    <style>p.indent{ padding-left: 1.8 em}</style>
+    <title>Boulder Flash</title>
+  </head>
+  
+<body>
+<h1 align="center"> Boulder Flash </h1>
+<!-<body background="wallpaper.png"->
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 17;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+    	<p>Please enter in the following information to find climbing gyms near you:</p>
+		<p>I want a gym that offers:</p>
+		<input type="checkbox" name="offer" value="bouldering"> Bouldering<br>
+		<input type="checkbox" name="offer" value="top_rope"> Top Roping<br>
+		<input type="checkbox" name="offer" value="lead"> Lead Climbing<br>
+		<input type="checkbox" name="offer" value="yoga"> Yoga<br>
+		<input type="checkbox" name="offer" value="gym"> Gym<br><br>
+			
+		Please rank the following from most important to least:
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select>
+
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select>
+
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select><br>
+		<input type="text" id="address"<br>
+		Budget:
+		<input type="text" name="budget"<br>
+		Search distance (in meters): 
+		<input type="int" name="distance"<br>
+      <input id="submit" type="button" value="Find my gyms!">
+    </div>
+    <div id="map"></div>
+    <script>
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 8,
+          center: {lat: 33.640627, lng: -117.844122}
+        });
+        var geocoder = new google.maps.Geocoder();
+
+        document.getElementById('submit').addEventListener('click', function() {
+          geocodeAddress(geocoder, map);
+        });
+      }
+
+      function geocodeAddress(geocoder, resultsMap) {
+        var address = document.getElementById('address').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+          if (status === 'OK') {
+            resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location
+            });
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+      }
+    </script>
+  </body>
+
+
+<!-- <script type="text/javascript">
+	var map;
+
+	function initialize() {
+	  // Create a map centered in Pyrmont, Sydney (Australia).
+	  map = new google.maps.Map(document.getElementById('map'), {
+		center: {lat: -33.8666, lng: 151.1958},
+		zoom: 15
+	  });
+
+	  // Search for Google's office in Australia.
+	  var request = {
+		location: map.getCenter(),
+		radius: distance,
+		query: 'climbing'
+	  };
+
+	  var service = new google.maps.places.PlacesService(map);
+	  service.textSearch(request, callback);
+	}
+
+	// Checks that the PlacesServiceStatus is OK, and adds a marker
+	// using the place ID and location from the PlacesService.
+	function callback(results, status) {
+	  if (status == google.maps.places.PlacesServiceStatus.OK) {
+		var marker = new google.maps.Marker({
+		  map: map,
+		  place: {
+			placeId: results[0].place_id,
+			location: results[0].geometry.location
+		  }
+		});
+	  }
+	}
+
+	google.maps.event.addDomListener(window, 'load', initialize);
+</script> -->
+
+<!--For geocoding-->
+<!-- <script type="text/javascript">
+  var geocoder;
+  var map;
+  function G_initialize() {
+  	getCoordinates(address, function(coords)){
+
+    	var mapOptions = {
+     	zoom: 8,
+     	center: latlng
+  	}
+    
+    }
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
+  }
+
+  function codeAddress() {
+    var address = document.getElementById('address').value;
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == 'OK') {
+        map.setCenter(results[0].geometry.location);
+        var marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+        });
+      } else {
+        alert('Geocode was not successful for the following reason: ' + status);
+      }
+    });
+  }
+</script>
+
+<body onload="initialize()">
+ <div id="map" style="width: 320px; height: 480px;"></div>
+  <div>
+    <input id="address" type="textbox" value="Sydney, NSW">
+    <input type="button" value="Encode" onclick="codeAddress()">
+  </div>
+</body> -->
+
+
+</body>
+
+
+</html>
