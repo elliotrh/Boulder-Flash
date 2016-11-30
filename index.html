@@ -9,11 +9,9 @@
     
     <!-- google maps api -->
     <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&callback=initMap">
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&callback=initMap&libraries=places">
     </script>
 	
-	<!-- google places api -->
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&libraries=places"></script>
 	
     <style>p.indent{ padding-left: 1.8 em}</style>
     <title>Boulder Flash</title>
@@ -52,6 +50,14 @@
   <body>
     <div>
     	<p>Please enter in the following information to find climbing gyms near you:</p>
+      Address:
+    <input type="text" id="address"<br>
+    Budget:
+    <input type="text" id="budget"<br>
+    Search distance (in meters): 
+    <input type="int" id="distance"<br>
+      <input id="submit" type="button" value="Find my gyms!">
+    </div>
 		<p>I want a gym that offers:</p>
 		<input type="checkbox" name="offer" value="bouldering"> Bouldering<br>
 		<input type="checkbox" name="offer" value="top_rope"> Top Roping<br>
@@ -80,15 +86,17 @@
 			<option value="3rd">Price</option>
 
 		</select><br>
-		<input type="text" id="address"<br>
-		Budget:
-		<input type="text" name="budget"<br>
-		Search distance (in meters): 
-		<input type="int" name="distance"<br>
-      <input id="submit" type="button" value="Find my gyms!">
-    </div>
+		
     <div id="map"></div>
     <script>
+      var miles;
+      var service;
+      
+      function metersToMiles(distance){
+        miles = distance*1609.34;
+        return miles;
+      }
+
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: 8,
@@ -99,6 +107,9 @@
         document.getElementById('submit').addEventListener('click', function() {
           geocodeAddress(geocoder, map);
         });
+
+        service = new google.maps.places.PlacesService(map);
+        google.maps.event.addListenerOnce(map, 'bounds_changed', performSearch());
       }
 
       function geocodeAddress(geocoder, resultsMap) {
@@ -115,88 +126,25 @@
           }
         });
       }
+
+
+
+      function performSearch()
+      {
+        var request = {
+          location: address,
+          types: ['store'],
+          radius: '2000'
+
+        };
+        service.nearbySearch(request, handleSearchResults);
+      }
+      function handleSearchResults(results, status)
+      {
+          console.log(results);
+      }
     </script>
   </body>
-
-
-<!-- <script type="text/javascript">
-	var map;
-
-	function initialize() {
-	  // Create a map centered in Pyrmont, Sydney (Australia).
-	  map = new google.maps.Map(document.getElementById('map'), {
-		center: {lat: -33.8666, lng: 151.1958},
-		zoom: 15
-	  });
-
-	  // Search for Google's office in Australia.
-	  var request = {
-		location: map.getCenter(),
-		radius: distance,
-		query: 'climbing'
-	  };
-
-	  var service = new google.maps.places.PlacesService(map);
-	  service.textSearch(request, callback);
-	}
-
-	// Checks that the PlacesServiceStatus is OK, and adds a marker
-	// using the place ID and location from the PlacesService.
-	function callback(results, status) {
-	  if (status == google.maps.places.PlacesServiceStatus.OK) {
-		var marker = new google.maps.Marker({
-		  map: map,
-		  place: {
-			placeId: results[0].place_id,
-			location: results[0].geometry.location
-		  }
-		});
-	  }
-	}
-
-	google.maps.event.addDomListener(window, 'load', initialize);
-</script> -->
-
-<!--For geocoding-->
-<!-- <script type="text/javascript">
-  var geocoder;
-  var map;
-  function G_initialize() {
-  	getCoordinates(address, function(coords)){
-
-    	var mapOptions = {
-     	zoom: 8,
-     	center: latlng
-  	}
-    
-    }
-    map = new google.maps.Map(document.getElementById('map'), mapOptions);
-  }
-
-  function codeAddress() {
-    var address = document.getElementById('address').value;
-    geocoder.geocode( { 'address': address}, function(results, status) {
-      if (status == 'OK') {
-        map.setCenter(results[0].geometry.location);
-        var marker = new google.maps.Marker({
-            map: map,
-            position: results[0].geometry.location
-        });
-      } else {
-        alert('Geocode was not successful for the following reason: ' + status);
-      }
-    });
-  }
-</script>
-
-<body onload="initialize()">
- <div id="map" style="width: 320px; height: 480px;"></div>
-  <div>
-    <input id="address" type="textbox" value="Sydney, NSW">
-    <input type="button" value="Encode" onclick="codeAddress()">
-  </div>
-</body> -->
-
 
 </body>
 
