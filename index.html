@@ -1,0 +1,217 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<!-<body bgcolor="#ABEBC6"->
+  <head>
+  
+  	<!-- jquery api -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+    <!-- google maps api -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&callback=initMap&libraries=places">
+    </script>
+	
+	
+    <style>p.indent{ padding-left: 1.8 em}</style>
+    <title>Boulder Flash</title>
+  </head>
+  
+<body>
+<h1 align="center"> Boulder Flash </h1>
+<!-<body background="wallpaper.png"->
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 17;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+    	<p>Please enter in the following information to find climbing gyms near you:</p>
+      Address:
+    <input type="text" id="address"<br>
+    Budget:
+    <input type="text" id="budget"<br>
+    Search distance: 
+    <input type="int" id="distance"<br>
+      <input id="submit" type="button" value="Find my gyms!">
+    </div>
+		<p>I want a gym that offers:</p>
+		<input type="checkbox" name="offer" value="bouldering"> Bouldering<br>
+		<input type="checkbox" name="offer" value="top_rope"> Top Roping<br>
+		<input type="checkbox" name="offer" value="lead"> Lead Climbing<br>
+		<input type="checkbox" name="offer" value="yoga"> Yoga<br>
+		<input type="checkbox" name="offer" value="gym"> Gym<br><br>
+			
+		Please rank the following from most important to least:
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select>
+
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select>
+
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select><br>
+    <button id='refresh'>Refresh</button>
+		
+    <div id="map"></div>
+    <script>
+      var miles;
+      var service;
+      var map;
+      var infowindow;
+
+      function metersToMiles(radius){
+        meters = radius*1609.34;
+        return meters;
+      }
+
+      function initMap(location) {
+        console.log(location);
+
+        var currentLocation = new google.maps.LatLng(location.coords.latitude, location.coords.longitude);
+
+        var mapOptions ={
+          center: currentLocation,
+          zoom: 8,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        var geocoder = new google.maps.Geocoder();
+        infowindow = new google.maps.InfoWindow();
+        service = new google.maps.places.PlacesService(map);
+        // infowindow = new google.maps.InfoWindow();
+        // service = new google.maps.places.PlacesService(map);
+        // service.textSearch({
+        //   location: currentLocation,
+        //   radius: metersToMiles(document.getElementById('distance').value),
+        //   query: 'bouldering'
+        // }, callback); 
+
+        document.getElementById('submit').addEventListener('click', function() {
+          geocodeAddress(geocoder, map);
+          search(map);
+        });
+        // document.getElementById('submit').addEventListener('click', function() {
+        //   search();
+        // });
+      } 
+
+
+      function search(coordinates){
+        service.textSearch({
+          location: coordinates,
+          radius: metersToMiles(document.getElementById('distance').value),
+          query: 'bouldering'
+        }, callback); 
+      }
+
+
+
+
+      function geocodeAddress(geocoder, resultsMap) {
+        var address = document.getElementById('address').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+          if (status === 'OK') {
+            var address2 = results[0].geometry.location;
+            resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location
+            });
+            search(address2);
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+        
+      }
+      // function search(coordinates){
+      //   infowindow = new google.maps.InfoWindow();
+      //   service = new google.maps.places.PlacesService(map);
+      //   service.textSearch({
+      //     location: coordinates,
+      //     radius: metersToMiles(document.getElementById('distance').value),
+      //     query: 'climbing'
+      //   }, callback); 
+      // }
+      function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]);
+          }
+        }
+      }
+
+      function createMarker(place) {
+        var placeLoc = place.geometry.location;
+        var markers = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location
+        });
+
+        var request = { reference: place.reference};
+        service.getDetails(request, function(details, status){
+          google.maps.event.addListener(markers, 'click', function(){infowindow.setContent(place.name + "  Rating: " + place.rating + " link: " + place.url);
+          infowindow.open(map, this);
+         });
+
+        });
+      }
+      $(document).ready(function()
+      {
+        navigator.geolocation.getCurrentPosition(initMap);
+      });
+
+      $('#refresh').click(function(){
+        location.reload(true);
+      });
+
+
+  </script>
+
+
+
+
+  
+  </body>
+
+</body>
+
+
+</html>
