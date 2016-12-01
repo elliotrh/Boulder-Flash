@@ -1,0 +1,237 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<body bgcolor="#ABEBC6">
+  <head>
+  
+  	<!-- jquery api -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+    <!-- google maps api -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEOOR4beBcx4UxdM4RA3pPOI11NZwoNHk&callback=initMap&libraries=places">
+    </script>
+	
+	
+    <style>p.indent{ padding-left: 1.8 em}</style>
+    <title>Boulder Flash</title>
+  </head>
+  
+<body>
+<h1 align="center"> Boulder Flash </h1>
+<!-<body background="wallpaper.png"->
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 17;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+    	<p>Please enter in the following information to find climbing gyms near you:</p>
+      Address:
+    <input type="text" id="address"><br>
+    Price Level (0 being cheapest and 4 being most expensive):
+    <select> 
+      <option value="1st">0</option>
+      <option value="2nd">1</option>
+      <option value="3rd">2</option>
+      <option value="4th">3</option>
+      <option value="5th">4</option>
+    </select><br>
+
+    Search distance (30 miles max): 
+    <input type="int" id="distance"<br>
+      
+    </div>
+		<p>I want a gym that offers:</p>
+		<input type="checkbox" name="offer" value="bouldering"/> Bouldering<br>
+		<input type="checkbox" name="offer" value="top_rope"/> Top Roping<br>
+		<input type="checkbox" name="offer" value="lead"/> Lead Climbing<br>
+		<input type="checkbox" name="offer" value="yoga"/> Yoga<br>
+		<input type="checkbox" name="offer" value="gym"/> Gym<br><br>
+			
+		Please rank the following from most important to least:
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select>
+
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select>
+
+		<select>
+			<option value="1st">Distance</option>
+			<option value="2nd">Rating</option>
+			<option value="3rd">Price</option>
+
+		</select><br>
+    <input id="submit" type="button" value="Find my gyms!">
+    <button id='refresh'>Refresh</button>
+		
+    <div id="map"></div>
+    <script>
+      var miles;
+      var service;
+      var map;
+      var infowindow;
+      var keywords;
+      var gmarkers = [];
+
+      function milesToMeters(radius){
+        var meters = radius*1609.34;
+        return meters;
+      }
+
+      function initMap(location) {
+        console.log(location);
+
+        removeMarkers();
+        var currentLocation = new google.maps.LatLng(location.coords.latitude, location.coords.longitude);
+
+        var mapOptions ={
+          center: currentLocation,
+          zoom: 8,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        var geocoder = new google.maps.Geocoder();
+        infowindow = new google.maps.InfoWindow();
+        service = new google.maps.places.PlacesService(map);
+
+        document.getElementById('submit').addEventListener('click', function() {
+          geocodeAddress(geocoder, map);
+        });
+      } 
+
+
+      function search(coordinates){
+        service.textSearch({
+          location: coordinates,
+          // minPriceLevel: '0',
+          //maxPriceLevel: '3',
+          radius: milesToMeters(document.getElementById('distance').value).toString(),
+          // type: ['gym'],
+          query: checkboxes() + 'AND (climbing)'
+        }, callback); 
+      }
+
+
+
+
+      function geocodeAddress(geocoder, resultsMap) {
+        var address = document.getElementById('address').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+          if (status === 'OK') {
+            var address2 = results[0].geometry.location;
+            resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location
+            });
+            gmarkers.push(marker);
+            search(address2);
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+        
+      }
+
+      function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]);
+          }
+        }
+        alert("task completed");
+      }
+
+      function createMarker(place) {
+        var placeLoc = place.geometry.location;
+        var markers = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location
+        });
+        gmarkers.push(markers);
+
+        var request = { reference: place.reference};
+        service.getDetails(request, function(details, status){
+          google.maps.event.addListener(markers, 'click', function(){infowindow.setContent("NAME: " + details.name + "<br />" + "  RATING: " + details.rating + "<br />" + " WEBSITE: " + details.website);
+          infowindow.open(map, this);
+         });
+
+        });
+
+      }
+
+      function removeMarkers(){
+        for(i=0; i<gmarkers.length; i++){
+          gmarkers[i].setMap(null);
+        }
+      }
+      $(document).ready(function()
+      {
+        navigator.geolocation.getCurrentPosition(initMap);
+      });
+
+      function checkboxes(){
+        var $boxes = $('input[name=offer]:checked');
+        $boxes.each(function(i){
+          // for (var i = 0; i<$boxes.length; i++) {
+          if(i == 0){
+            keywords = '(' + this.value + ')';
+          }
+          else{
+            keywords = keywords + ' AND ' + '(' + this.value + ')';
+          }
+          
+        });
+        console.log(keywords);
+        return keywords;
+      }
+      $('#refresh').click(function(){
+        location.reload(true);
+      });
+
+
+  </script>
+
+
+
+
+  
+  </body>
+
+</body>
+
+
+</html>
